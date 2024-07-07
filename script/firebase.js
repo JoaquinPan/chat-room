@@ -6,6 +6,7 @@ import {
   onAuthStateChanged,
   signInWithPopup,
 } from "firebase/auth";
+import { getFirestore, addDoc, collection } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -25,15 +26,26 @@ console.log(firebaseConfig);
 const app = initializeApp(firebaseConfig);
 const provider = new GoogleAuthProvider();
 
-export function login() {
-  const auth = getAuth();
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // 已登入
-      console.log("已經登入");
-    } else {
-      // 未登入
-      signInWithPopup(auth, provider);
-    }
+export function requireAuth() {
+  return new Promise((resolve, reject) => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        resolve(user);
+        unsubscribe();
+      } else {
+        signInWithPopup(auth, provider);
+      }
+    });
   });
+}
+
+export async function createRoom() {
+  const db = getFirestore();
+  const room = await addDoc(collection(db, "room"), {
+    name: "Chat Room",
+    createAt: new Date(),
+  });
+
+  return room.id;
 }
