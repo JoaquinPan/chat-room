@@ -4,9 +4,10 @@ import {
   GoogleAuthProvider,
   getAuth,
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithPopup
 } from "firebase/auth";
 import { getFirestore, addDoc, collection } from "firebase/firestore";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -16,11 +17,14 @@ const firebaseConfig = {
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGE_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-console.log(firebaseConfig);
+const COLLECTIONS = {
+  ROOM: "room",
+  MESSAGE: "message"
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -42,10 +46,28 @@ export function requireAuth() {
 
 export async function createRoom() {
   const db = getFirestore();
-  const room = await addDoc(collection(db, "room"), {
+  const room = await addDoc(collection(db, COLLECTIONS.ROOM), {
     name: "Chat Room",
-    createAt: new Date(),
+    createdAt: new Date()
   });
 
   return room.id;
+}
+
+export async function sendMessageToRoom(roomId, content) {
+  const db = getFirestore();
+  const messageRef = collection(
+    db,
+    COLLECTIONS.ROOM,
+    roomId,
+    COLLECTIONS.MESSAGE
+  );
+  const auth = getAuth();
+  const message = await addDoc(messageRef, {
+    senderEmail: auth.currentUser.email,
+    senderName: auth.currentUser.displayName,
+    content,
+    timestamp: new Date()
+  });
+  return message;
 }
