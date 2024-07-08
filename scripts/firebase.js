@@ -4,9 +4,14 @@ import {
   GoogleAuthProvider,
   getAuth,
   onAuthStateChanged,
-  signInWithPopup
+  signInWithPopup,
 } from "firebase/auth";
-import { getFirestore, addDoc, collection } from "firebase/firestore";
+import {
+  getFirestore,
+  addDoc,
+  collection,
+  onSnapshot,
+} from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -18,12 +23,12 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const COLLECTIONS = {
   ROOM: "room",
-  MESSAGE: "message"
+  MESSAGE: "message",
 };
 
 // Initialize Firebase
@@ -70,4 +75,31 @@ export async function sendMessageToRoom(roomId, content) {
     timestamp: new Date()
   });
   return message;
+}
+
+export async function subscribeToRoom(fn, roomId) {
+  const db = getFirestore();
+  const messageRef = collection(
+    db,
+    COLLECTIONS.ROOM,
+    roomId,
+    COLLECTIONS.MESSAGE
+  );
+
+  const unsubscribe = onSnapshot(messageRef, (messages) => {
+    const auth = getAuth();
+    const transformedMessages = messages.docs.map((doc) => {
+      const data = doc.data();
+      const id = doc.id;
+      return {
+        id,
+        isSelf: auth.currentUser.email === data.senderEmail,
+        ...data
+      };
+    });
+
+    fn(transformedMessages);
+  });
+
+  return unsubscribe;
 }

@@ -1,5 +1,5 @@
-import { createRoom, requireAuth } from "./script/firebase";
 import "./style.css";
+import { createRoom, requireAuth } from "./scripts/firebase";
 
 function setupEventListener() {
   const btn = document.getElementById("create-room-btn");
@@ -8,5 +8,4 @@ function setupEventListener() {
     window.location.href = `room.html?roomId=${roomId}`;
   });
 }
-
 requireAuth().then(setupEventListener);

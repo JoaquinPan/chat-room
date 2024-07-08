@@ -1,5 +1,29 @@
-import { requireAuth, sendMessageToRoom } from "./scripts/firebase";
+import {
+  requireAuth,
+  sendMessageToRoom,
+  subscribeToRoom,
+} from "./scripts/firebase";
 import "./style.css";
+
+function appendMessage(message) {
+  const messageContainer = document.getElementById("messages");
+  const messageElement = document.createElement("div");
+  messageElement.classList.add("message");
+  const user = document.createElement("div");
+  user.innerText = message.senderName;
+  const messageText = document.createElement("div");
+  if (message.isSelf) {
+    user.classList.add("message__user--self");
+    messageText.classList.add("message__text--self");
+  } else {
+    user.classList.add("message__user");
+    messageText.classList.add("message__text");
+  }
+  messageText.innerText = message.content;
+  messageElement.appendChild(user);
+  messageElement.appendChild(messageText);
+  messageContainer.appendChild(messageElement);
+}
 
 function sendMessage(roomId) {
   const messageInput = document.getElementById("message-input");
@@ -8,6 +32,11 @@ function sendMessage(roomId) {
 
   sendMessageToRoom(roomId, message);
   messageInput.value = "";
+}
+
+function goToBottom() {
+  const messages = document.getElementById("messages");
+  messages.scrollTop = messages.scrollHeight - messages.clientHeight;
 }
 
 function addSendMessageListener(roomId) {
@@ -27,8 +56,19 @@ function addSendMessageListener(roomId) {
 function setupEventListeners(roomId) {
   addSendMessageListener(roomId);
 }
+const messageIds = new Set();
+function messageUpdateHandler(messages) {
+  messages.forEach((message) => {
+    if (!messageIds.has(message.id)) {
+      messageIds.add(message.id);
+      appendMessage(message);
+    }
+  });
+  goToBottom();
+}
 
 requireAuth().then((user) => {
   const roomId = new URLSearchParams(window.location.search).get("roomId");
   setupEventListeners(roomId);
+  subscribeToRoom(messageUpdateHandler, roomId);
 });
