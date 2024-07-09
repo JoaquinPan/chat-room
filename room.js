@@ -53,8 +53,46 @@ function addSendMessageListener(roomId) {
   });
 }
 
+function setInviteUrl() {
+  const currentUrl = window.location.href;
+  const inviteLink = document.getElementById("invite-link");
+  inviteLink.value = currentUrl;
+}
+
+function addInviteButtonListener() {
+  const inviteButton = document.getElementById("invite-button");
+  const inviteModal = document.getElementById("invite-modal");
+  setInviteUrl();
+  inviteButton.addEventListener("click", () => {
+    inviteModal.classList.add("open");
+  });
+}
+
+function addCloseInviteModalListener() {
+  const closeModalButton = document.getElementById("close-invite-modal");
+  const inviteModal = document.getElementById("invite-modal");
+  closeModalButton.addEventListener("click", () => {
+    inviteModal.classList.remove("open");
+  });
+}
+
+function addCopyButtonListener() {
+  const copyButton = document.getElementById("copy-link-btn");
+  copyButton.addEventListener("click", () => {
+    navigator.clipboard.writeText(window.location.href);
+    // set text to “以複製” for 2 seconds
+    copyButton.innerText = "已複製";
+    setTimeout(() => {
+      copyButton.innerText = "複製連結";
+    }, 2000);
+  });
+}
+
 function setupEventListeners(roomId) {
   addSendMessageListener(roomId);
+  addInviteButtonListener();
+  addCloseInviteModalListener();
+  addCopyButtonListener();
 }
 const messageIds = new Set();
 function messageUpdateHandler(messages) {

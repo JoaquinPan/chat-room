@@ -4,13 +4,13 @@ import {
   GoogleAuthProvider,
   getAuth,
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithPopup
 } from "firebase/auth";
 import {
   getFirestore,
   addDoc,
   collection,
-  onSnapshot,
+  onSnapshot
 } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -23,12 +23,12 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const COLLECTIONS = {
   ROOM: "room",
-  MESSAGE: "message",
+  MESSAGE: "message"
 };
 
 // Initialize Firebase
