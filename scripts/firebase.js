@@ -4,13 +4,15 @@ import {
   GoogleAuthProvider,
   getAuth,
   onAuthStateChanged,
-  signInWithPopup
+  signInWithPopup,
 } from "firebase/auth";
 import {
   getFirestore,
   addDoc,
   collection,
-  onSnapshot
+  onSnapshot,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -23,12 +25,12 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const COLLECTIONS = {
   ROOM: "room",
-  MESSAGE: "message"
+  MESSAGE: "message",
 };
 
 // Initialize Firebase
@@ -53,7 +55,7 @@ export async function createRoom() {
   const db = getFirestore();
   const room = await addDoc(collection(db, COLLECTIONS.ROOM), {
     name: "Chat Room",
-    createdAt: new Date()
+    createdAt: new Date(),
   });
 
   return room.id;
@@ -72,7 +74,7 @@ export async function sendMessageToRoom(roomId, content) {
     senderEmail: auth.currentUser.email,
     senderName: auth.currentUser.displayName,
     content,
-    timestamp: new Date()
+    timestamp: new Date(),
   });
   return message;
 }
@@ -94,7 +96,7 @@ export async function subscribeToRoom(fn, roomId) {
       return {
         id,
         isSelf: auth.currentUser.email === data.senderEmail,
-        ...data
+        ...data,
       };
     });
 
@@ -102,4 +104,10 @@ export async function subscribeToRoom(fn, roomId) {
   });
 
   return unsubscribe;
+}
+
+export function getRoom(roomId) {
+  const db = getFirestore();
+  const roomRef = doc(db, COLLECTIONS.ROOM, roomId);
+  return getDoc(roomRef).then((doc) => doc.data());
 }

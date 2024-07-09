@@ -2,6 +2,7 @@ import {
   requireAuth,
   sendMessageToRoom,
   subscribeToRoom,
+  getRoom,
 } from "./scripts/firebase";
 import "./style.css";
 
@@ -88,6 +89,12 @@ function addCopyButtonListener() {
   });
 }
 
+async function loadRoomName(roomId) {
+  const title = document.getElementById("chat-room-name");
+  const room = await getRoom(roomId);
+  title.textContent = room.name;
+}
+
 function setupEventListeners(roomId) {
   addSendMessageListener(roomId);
   addInviteButtonListener();
@@ -107,6 +114,7 @@ function messageUpdateHandler(messages) {
 
 requireAuth().then((user) => {
   const roomId = new URLSearchParams(window.location.search).get("roomId");
+  loadRoomName(roomId);
   setupEventListeners(roomId);
   subscribeToRoom(messageUpdateHandler, roomId);
 });
