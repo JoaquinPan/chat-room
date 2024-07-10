@@ -4,7 +4,7 @@ import {
   GoogleAuthProvider,
   getAuth,
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithPopup
 } from "firebase/auth";
 import {
   getFirestore,
@@ -13,6 +13,7 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  setDoc
 } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -110,4 +111,10 @@ export function getRoom(roomId) {
   const db = getFirestore();
   const roomRef = doc(db, COLLECTIONS.ROOM, roomId);
   return getDoc(roomRef).then((doc) => doc.data());
+}
+
+export async function updateRoomName(name, roomId) {
+  const db = getFirestore();
+  const roomRef = doc(db, COLLECTIONS.ROOM, roomId);
+  await setDoc(roomRef, { name: name }, { merge: true });
 }

@@ -1,8 +1,10 @@
+import { doc } from "firebase/firestore";
 import {
   requireAuth,
   sendMessageToRoom,
   subscribeToRoom,
   getRoom,
+  updateRoomName
 } from "./scripts/firebase";
 import "./style.css";
 
@@ -89,6 +91,43 @@ function addCopyButtonListener() {
   });
 }
 
+function createTitleEditInput(value) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = value;
+  input.classList.add("editable-input");
+  return input;
+}
+
+function addEditIconListener(roomId) {
+  const editIcon = document.getElementById("edit-icon");
+  editIcon.addEventListener("click", () => {
+    const title = document.getElementById("chat-room-name");
+    const input = createTitleEditInput(title.textContent);
+    title.parentNode.replaceChild(input, title);
+    input.focus();
+    editIcon.style.display = "none";
+
+    function saveTitle() {
+      updateRoomName(input.value, roomId)
+        .then(() => {
+          title.textContent = input.value;
+        })
+        .finally(() => {
+          input.parentNode.replaceChild(title, input);
+          editIcon.style.display = "block";
+        });
+    }
+
+    input.addEventListener("blur", saveTitle);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        input.blur();
+      }
+    });
+  });
+}
+
 async function loadRoomName(roomId) {
   const title = document.getElementById("chat-room-name");
   const room = await getRoom(roomId);
@@ -100,6 +139,7 @@ function setupEventListeners(roomId) {
   addInviteButtonListener();
   addCloseInviteModalListener();
   addCopyButtonListener();
+  addEditIconListener(roomId);
 }
 const messageIds = new Set();
 function messageUpdateHandler(messages) {
